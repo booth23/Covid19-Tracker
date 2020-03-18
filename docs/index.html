@@ -16,132 +16,66 @@
             4. Add day-over-day change
 
     -->
+    <div class="wrapper">
+        <div class="header"><h2>Covid19 Tracker</h2></div>
+    
+        <div class="content">
+        <table id="dataTable">
+        <caption>Number of positive cases</caption>
+        <thead id="tableHead"></thead>
+        <tbody id="tableBody"></tbody>
+        </table>
+        
+        </div>
+        <div class="sidebar">
+         <div class="dropdown">
+            <button onclick="toggleMenu()"  class="dropbtn">Metric</button>
+            <ul id="myDropdown" class="dropdown-content">
+                <li onclick="setMetric('positive'); loadTable(dataSet)">Confirmed</li>
+                <li onclick="setMetric('death'); loadTable(dataSet, 'death')">Deaths</li>
+                <li onclick="setMetric('total'); loadTable(dataSet, 'total')">Tested</li>
+            </ul>
+        </div> 
+        
+        </div>
+        <div class="footer">Source of data:<a href="https://covidtracking.com/"> https://covidtracking.com/</a></div>
+        
+        
+    </div>
+
+
+    <script type="text/javascript" src="helpers.js"></script>
 
     <script>
+
+    
+
     var dataSet;
+    var rawData;
+    var metric = "positive";
     var url = "https://covidtracking.com/api/states/daily";
 
-    cols = [20200313, 20200314, 20200315, 20200316, 20200317];
-
-    function loadTable(caseData, metric = "positive") {
-        var tableColumns = document.getElementById("tableHead");
-        var tableData = document.getElementById("tableBody");
-        var pagerText = document.getElementById("pager-text");
-        let headHtml = `<th onclick="sortColumn('state')">State</th>`;
-        let bodyHtml = '';
-
-        for(let c of cols) {
-            headHtml += `<th onclick="sortColumn('${c}')">${formatDate(c)}</th>`;
-        }
-
-
-        tableColumns.innerHTML = '<tr>' + headHtml + '</tr>';
-
-        caseData.forEach(state => {
-            bodyHtml += `<tr>`;
-            bodyHtml += `<td>${state["state"]}</td>`;
-
-            cols.forEach(col => {
-                var val;
-                if(col in state){
-                    val = state[col][metric]; 
-                } else {
-                    val = 0;
-                }
-                
-                bodyHtml += `<td>${val}</td>`;
-            });
-        
-            bodyHtml += `</tr>`;
-
-        } );
-       
-
-        tableBody.innerHTML = bodyHtml;
-
-        };
-
-
-
-    function formatdata(data) {
-        newobj = {};
-        newdata = [];
-        for(var i=1; i < data.length; i++) {
-            var st = data[i]["state"];
-            var dt = data[i]["date"]; 
-            var ob = {
-                    "positive": data[i]["positive"],
-                    "negative": data[i]["negative"],
-                    "death": data[i]["death"],
-                    "total": data[i]["total"]
-                }
-            if(st in newobj){
-                newobj[st][dt] = ob; 
-            
-            }else{
-                newobj[st] = {};
-                newobj[st]['state'] = st;
-                newobj[st][dt] = ob;
-            
-            }
-
-        }
-        for (const property in newobj) {
-          newdata.push(newobj[property]);
-        }
-        return newdata;
-    };
-
-    function toggleMenu() {
-            document.getElementById("myDropdown").classList.toggle("show");
-        };
-
-
-    const months = ["JAN", "FEB", "MAR","APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-
-    function formatDate(dt) {
-        var val = '' + dt;
-        return months[+val.slice(4,6)-1] + " " + val.slice(6);
-
-    }    
-
+    
+    
+     
+    
+    var sortOrder = false;
     fetch(url)
         .then(function (response) {
             return response.json();
         }).then(function(data) {
+            rawData = data;
+            cols_all = [...new Set(rawData.map(x=>x.date)) ].sort();
+            cols = cols_all.slice(-7);
             dataSet = formatdata(data); 
-            loadTable(dataSet);
+            loadTable(sortState(dataSet));
         });
             
 
 
     </script>
 
-<div class="wrapper">
-    <div class="header"><h2>Covid19 Tracker</h2></div>
 
-    <div class="content">
-    <table id="dataTable">
-    <thead id="tableHead"></thead>
-    <tbody id="tableBody"></tbody>
-    </table>
-    
-    </div>
-    <div class="sidebar">
-     <div class="dropdown">
-        <button onclick="toggleMenu()"  class="dropbtn">Metric</button>
-        <ul id="myDropdown" class="dropdown-content">
-            <li onclick="loadTable(dataSet)">Confirmed</li>
-            <li onclick="loadTable(dataSet, 'death')">Deaths</li>
-            <li onclick="loadTable(dataSet, 'total')">Tested</li>
-        </ul>
-    </div> 
-    
-    </div>
-    <div class="footer">Source of data:<a href="https://covidtracking.com/"> https://covidtracking.com/</a></div>
-    
-    
-    </div>
 
     
 </body>
