@@ -44,6 +44,10 @@ body {
 
 }
 
+a {
+    color: white;
+  }
+
 
 table {
     font-family: Arial, Helvetica, sans-serif;

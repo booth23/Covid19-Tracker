@@ -2,6 +2,8 @@ This is just a way to track cases and play around with visualizations. It'll cha
 
 The data is from [https://covidtracking.com/](https://covidtracking.com/).
 
+See [here](https://booth23.github.io/Covid19-Tracker/) for the live page.
+
 To do:
 1. Add positive/tested side by side
 2. Filter by state

@@ -31,7 +31,7 @@
         let bodyHtml = '';
 
         for(let c of cols) {
-            headHtml += `<th onclick="sortColumn('${c}')">${c}</th>`;
+            headHtml += `<th onclick="sortColumn('${c}')">${formatDate(c)}</th>`;
         }
 
 
@@ -96,6 +96,15 @@
             document.getElementById("myDropdown").classList.toggle("show");
         };
 
+
+    const months = ["JAN", "FEB", "MAR","APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+
+    function formatDate(dt) {
+        var val = '' + dt;
+        return months[+val.slice(4,6)-1] + " " + val.slice(6);
+
+    }    
+
     fetch(url)
         .then(function (response) {
             return response.json();
@@ -129,7 +138,7 @@
     </div> 
     
     </div>
-    <div class="footer"></div>
+    <div class="footer">Source of data:<a href="https://covidtracking.com/"> https://covidtracking.com/</a></div>
     
     
     </div>
