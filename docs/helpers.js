@@ -66,7 +66,7 @@ function loadJhu(caseData) {
 
     // build html string for header row with click event to sort data by that column.
     for(let c of jhuCols) {
-        headHtml += `<th onclick="loadJhu(sortState(jhuUS), ${c})">${formatJhuDate(c)}</th>`;
+        headHtml += `<th onclick="loadJhu(sortState(jhuUS, '${c}'))">${formatJhuDate(c)}</th>`;
     }
     // apply the string
     tableColumns.innerHTML = '<tr>' + headHtml + '</tr>';
@@ -168,6 +168,7 @@ function formatJhuDate(dt) {
 // sort the data by state. It toggles ascending and descending
 function sortState(data, col='state') {
     sortOrder = !sortOrder;
+    
     return data.sort((a, b) => {  
         if (a[col] > b[col]) {
             return sortOrder;
@@ -176,7 +177,8 @@ function sortState(data, col='state') {
         } else {
             return 0;
         }
-     });
+        });
+
 };
 
 // sort by dates. some values are undefined so we treat those as 0s;
