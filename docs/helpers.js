@@ -5,7 +5,6 @@ const months = ["JAN", "FEB", "MAR","APR", "MAY", "JUN", "JUL", "AUG", "SEP", "O
 function loadTable(caseData, metric="positive") {
     var tableColumns = document.getElementById("tableHead");
     var tableData = document.getElementById("tableBody");
-    var pagerText = document.getElementById("pager-text");
     let headHtml = `<th onclick="loadTable(sortState(dataSet))">State</th>`;
     let bodyHtml = '';
 
@@ -46,6 +45,57 @@ function loadTable(caseData, metric="positive") {
 
 };
 
+function stateFilter(data) {
+    if(stateCurrent) {
+        return data.filter(a=> a.state == stateCurrent);
+    } else {
+        return data;
+    }
+
+};
+
+function loadJhu(caseData) {
+    var tableColumns = document.getElementById("tableHead");
+    var tableData = document.getElementById("tableBody");
+
+    var jhuCols = jhuHeaders.slice(-7);
+    
+    let headHtml = '<th onclick="loadJhu(sortState(jhuUS))">State</th>';
+    let bodyHtml = '';
+    
+
+    // build html string for header row with click event to sort data by that column.
+    for(let c of jhuCols) {
+        headHtml += `<th onclick="loadJhu(sortState(jhuUS), ${c})">${formatJhuDate(c)}</th>`;
+    }
+    // apply the string
+    tableColumns.innerHTML = '<tr>' + headHtml + '</tr>';
+
+    
+
+    // built html string for body, loop through each row of data.
+    caseData.forEach(row => {
+        bodyHtml += `<tr>`;
+
+        // state is the first column
+        bodyHtml += `<td>${row["state"]}</td>`;
+
+        // add additional columns, default is the last 7 days.
+        jhuCols.forEach(col => {
+                     
+            bodyHtml += `<td>${row[col]}</td>`;
+        });
+        
+        bodyHtml += `</tr>`;
+
+    } );
+   
+    // apply the body html
+    tableBody.innerHTML = bodyHtml;
+
+};
+
+
 // this takes long data and nests it for each state and date.
 // the result is one row for each state and within each state,
 // one object for each date.
@@ -84,6 +134,10 @@ function toggleMenu() {
         document.getElementById("myDropdown").classList.toggle("show");
     };
 
+function toggleSourceMenu() {
+        document.getElementById("sourceDropdown").classList.toggle("show");
+    };
+
 // change caption depending on what metric we are looking at
 function setMetric(val) {
     metric = val;
@@ -103,15 +157,21 @@ function formatDate(dt) {
     var val = '' + dt;
     return months[+val.slice(4,6)-1] + " " + val.slice(6);
 
-}    
+}   
+
+function formatJhuDate(dt) {
+    let vs = dt.split("/");
+    return months[vs[0]-1] + " " + vs[1];
+};
+
 
 // sort the data by state. It toggles ascending and descending
-function sortState(data) {
+function sortState(data, col='state') {
     sortOrder = !sortOrder;
     return data.sort((a, b) => {  
-        if (a.state > b.state) {
+        if (a[col] > b[col]) {
             return sortOrder;
-        } else if (a.state < b.state) {
+        } else if (a[col] < b[col]) {
             return !sortOrder;
         } else {
             return 0;
@@ -147,4 +207,34 @@ function sortSub(data, col) {
 };
 
 
-    
+
+function toJSON(csv){
+
+    var lines=csv.split("\n");
+  
+    var result = [];
+  
+    var headers=lines[0].trim().split(",");
+    jhuHeaders = headers;
+    headers[0] = 'state';
+    headers[1] = 'country';
+   
+    for(var i=1;i<lines.length;i++){
+  
+        var obj = {};
+        var currentline=lines[i].trim().split(",");
+  
+        for(var j=0;j<headers.length;j++){
+            if(j < 2) {
+                obj[headers[j]] = currentline[j];
+            } else {
+                obj[headers[j]] = +currentline[j];
+            }
+        }
+  
+        result.push(obj);
+  
+    }
+
+    return result; 
+  }

@@ -29,12 +29,23 @@
         </div>
         <div class="sidebar">
          <div class="dropdown">
+            <button class="dropbtn">Source</button>
+            <ul id="sourceDropdown" class="dropdown-content">
+                <li onclick="sortOrder=false; loadTable(sortState(dataSet))">Covidtracking.com</li>
+                <li onclick="sortOrder=false; loadJhu(sortState(jhuUS))">JHU</li>
+
+            </ul>
+
+            <!--
             <button onclick="toggleMenu()"  class="dropbtn">Metric</button>
             <ul id="myDropdown" class="dropdown-content">
                 <li onclick="setMetric('positive'); loadTable(dataSet)">Confirmed</li>
                 <li onclick="setMetric('death'); loadTable(dataSet, 'death')">Deaths</li>
                 <li onclick="setMetric('total'); loadTable(dataSet, 'total')">Tested</li>
             </ul>
+        -->
+            
+
         </div> 
         
         </div>
@@ -52,12 +63,12 @@
 
     var dataSet;
     var rawData;
+    var jhuData;
+    var jhuUS;
     var metric = "positive";
+    var jhuHeaders;
     var url = "https://covidtracking.com/api/states/daily";
-
-    
-    
-     
+    var url1 = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv";
     
     var sortOrder = false;
     fetch(url)
@@ -69,6 +80,14 @@
             cols = cols_all.slice(-7);
             dataSet = formatdata(data); 
             loadTable(sortState(dataSet));
+        });
+
+    fetch(url1)
+        .then(function (response) {
+            return response.text();
+        }).then(function(data) {
+            jhuData = toJSON(data).filter(a => +a['3/17/20'] > 0);
+            jhuUS = jhuData.filter(a => a.country == 'US');
         });
             
 
