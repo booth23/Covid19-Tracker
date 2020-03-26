@@ -6,11 +6,12 @@ body {
 .wrapper {
     display: grid;
     grid-gap: 10px;
-    grid-template: repeat(6, 1fr);
+    grid-template: repeat(7, 1fr);
     grid-template-areas:
-        ". header header header header ."
-        ". sidebar content content content ."
-        ". footer footer footer footer .";
+        ". header header header header header ."
+        ". sidebar fig1 fig1 fig1 fig1 ."
+        ". sidebar content content content content ."
+        ". footer footer footer footer footer .";
     background-color: #fff;
     color: #444;
 }
@@ -27,6 +28,7 @@ body {
 
 .header {
     grid-area: header;
+    text-align: center;
     align-items: center;
     min-height: 60px;
 }
@@ -36,9 +38,28 @@ body {
     display: flex;
 }
 
+.fig1 {
+    grid-area: fig1;
+}
 
+.caption {
+    text-align: center;
+    /*width: 80%;
+    margin: 0 auto;
+    padding: 20px;*/
+}
 
-.header, .footer, .pager .pager1 {
+#caption {
+    text-align: center;
+    width: 80%;
+    margin: 0 auto;
+}
+
+.fig2 {
+    grid-area: fig2
+}
+
+.header, .footer {
     color: #fff;
     background-color: #444;
 
@@ -153,3 +174,19 @@ li {
 
 /* Change the background color of the dropdown button when the dropdown content is shown */
 .dropdown:hover .dropbtn {background-color: #3e8e41;}
+
+
+.line {
+    fill: none;
+    stroke: steelblue;
+    stroke-width: 1.5px;
+}
+
+
+
+.tooltip {
+    font-size: 14px;
+    color: black;
+}
+
+

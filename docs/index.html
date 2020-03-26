@@ -21,29 +21,24 @@
     
         <div class="content">
         <table id="dataTable">
-        <caption>Number of positive cases</caption>
+        <caption></caption>
         <thead id="tableHead"></thead>
         <tbody id="tableBody"></tbody>
         </table>
         
         </div>
+        <div class="fig1" class="caption"></div>
+        <div class="fig1" id="fig1"></div>
         <div class="sidebar">
          <div class="dropdown">
-            <button class="dropbtn">Source</button>
-            <ul id="sourceDropdown" class="dropdown-content">
-                <li onclick="sortOrder=false; loadTable(sortState(dataSet))">Covidtracking.com</li>
-                <li onclick="sortOrder=false; loadJhu(sortState(jhuUS))">JHU</li>
 
-            </ul>
-
-            <!--
             <button onclick="toggleMenu()"  class="dropbtn">Metric</button>
             <ul id="myDropdown" class="dropdown-content">
-                <li onclick="setMetric('positive'); loadTable(dataSet)">Confirmed</li>
-                <li onclick="setMetric('death'); loadTable(dataSet, 'death')">Deaths</li>
-                <li onclick="setMetric('total'); loadTable(dataSet, 'total')">Tested</li>
+                <li onclick="setMetric('positive'); loadTable(dataSet); plotUs(rawUs);">Positive Cases</li>
+                <li onclick="setMetric('death'); loadTable(dataSet, 'death'); plotUs(rawUs);">Deaths</li>
+                <li onclick="setMetric('total'); loadTable(dataSet, 'total'); plotUs(rawUs);">Tested</li>
             </ul>
-        -->
+    
             
 
         </div> 
@@ -56,6 +51,7 @@
 
 
     <script type="text/javascript" src="helpers.js"></script>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
 
     <script>
 
@@ -63,32 +59,49 @@
 
     var dataSet;
     var rawData;
-    var jhuData;
-    var jhuUS;
+    var rawUs;
+    var cols_all;
+
     var metric = "positive";
-    var jhuHeaders;
     var url = "https://covidtracking.com/api/states/daily";
-    var url1 = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv";
-    
+    var usurl = "https://covidtracking.com/api/us/daily";
+
+    var xScale;
+    var yScale;
+
+    var margin = {top: 50, right: 50, bottom: 50, left: 50};
+    var width = 1000; 
+    var height = 300; 
+        
     var sortOrder = false;
+
+    
+
+
     fetch(url)
         .then(function (response) {
             return response.json();
         }).then(function(data) {
             rawData = data;
-            cols_all = [...new Set(rawData.map(x=>x.date)) ].sort();
+            cols_all = [...new Set(data.map(x=>x.date)) ].sort();
             cols = cols_all.slice(-7);
             dataSet = formatdata(data); 
             loadTable(sortState(dataSet));
+
         });
 
-    fetch(url1)
+    fetch(usurl)
         .then(function (response) {
-            return response.text();
+            return response.json();
         }).then(function(data) {
-            jhuData = toJSON(data).filter(a => +a['3/17/20'] > 0);
-            jhuUS = jhuData.filter(a => a.country == 'US');
-        });
+            rawUs = data;
+        
+
+        plotUs(rawUs);
+
+
+    });
+
             
 
 

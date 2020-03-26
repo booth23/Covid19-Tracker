@@ -54,46 +54,6 @@ function stateFilter(data) {
 
 };
 
-function loadJhu(caseData) {
-    var tableColumns = document.getElementById("tableHead");
-    var tableData = document.getElementById("tableBody");
-
-    var jhuCols = jhuHeaders.slice(-7);
-    
-    let headHtml = '<th onclick="loadJhu(sortState(jhuUS))">State</th>';
-    let bodyHtml = '';
-    
-
-    // build html string for header row with click event to sort data by that column.
-    for(let c of jhuCols) {
-        headHtml += `<th onclick="loadJhu(sortState(jhuUS, '${c}'))">${formatJhuDate(c)}</th>`;
-    }
-    // apply the string
-    tableColumns.innerHTML = '<tr>' + headHtml + '</tr>';
-
-    
-
-    // built html string for body, loop through each row of data.
-    caseData.forEach(row => {
-        bodyHtml += `<tr>`;
-
-        // state is the first column
-        bodyHtml += `<td>${row["state"]}</td>`;
-
-        // add additional columns, default is the last 7 days.
-        jhuCols.forEach(col => {
-                     
-            bodyHtml += `<td>${row[col]}</td>`;
-        });
-        
-        bodyHtml += `</tr>`;
-
-    } );
-   
-    // apply the body html
-    tableBody.innerHTML = bodyHtml;
-
-};
 
 
 // this takes long data and nests it for each state and date.
@@ -138,17 +98,54 @@ function toggleSourceMenu() {
         document.getElementById("sourceDropdown").classList.toggle("show");
     };
 
+
+    function mouseover(d) {  // Add interactivity
+        var x = Math.min(xScale(formatDate(d.date))-50,850);
+        var y = Math.max(yScale(d[metric])-5, 30);
+
+        d3.select("#svg1")
+            .append('svg:text')
+            .attr("id","tooltip")
+            .attr("class", "tooltip")
+            .attr("x", x)
+            .attr("y", y)
+            .append('svg:tspan')
+            .attr('x', x)
+            .attr('dy', 0)
+            .text("Date: " + formatDate(d.date))
+            .append('svg:tspan')
+            .attr('x', x)
+            .attr('dy', 14)
+            .text("Confirmed: " + formatNumber(d.positive))
+            .append('svg:tspan')
+            .attr('x', x)
+            .attr('dy', 15)
+            .text("Deaths: " + formatNumber(d.death))
+            .append('svg:tspan')
+            .attr('x', x)
+            .attr('dy', 15)
+            .text("Tested: " + formatNumber(d.posNeg));
+    };
+
+    function mouseout() {
+
+        d3.select("#tooltip")
+            .remove();
+    };
+
+
+
 // change caption depending on what metric we are looking at
 function setMetric(val) {
     metric = val;
-    var cap = document.getElementById("dataTable").createCaption();
-    if(val=='positive') {
-        cap.innerHTML = '<b>Number of positive cases</b>'; 
-    } else if(val=='death') {
-        cap.innerHTML = '<b>Number of deaths</b>'; 
-    } else if(val=='total') {
-        cap.innerHTML = '<b>Number of tests reported (positive and negative)</b>'; 
-    }
+    //var cap = document.getElementById("dataTable").createCaption();
+    //if(val=='positive') {
+    //    cap.innerHTML = '<b>Number of positive cases</b>'; 
+    //} else if(val=='death') {
+    //    cap.innerHTML = '<b>Number of deaths</b>'; 
+    //} else if(val=='total') {
+    //    cap.innerHTML = '<b>Number of tests reported (positive and negative)</b>'; 
+    //}
     
 };
 
@@ -159,10 +156,10 @@ function formatDate(dt) {
 
 }   
 
-function formatJhuDate(dt) {
-    let vs = dt.split("/");
-    return months[vs[0]-1] + " " + vs[1];
-};
+// add commas to numbers
+function formatNumber(num) {
+    return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')
+  }
 
 
 // sort the data by state. It toggles ascending and descending
@@ -208,35 +205,73 @@ function sortSub(data, col) {
      });
 };
 
+function plotUs(data) {
+
+    d3.select("#fig1").selectAll("svg").remove();
+
+    xScale = d3.scaleBand()
+        .domain(data.map(a => formatDate(a.date)).sort())
+        .range([0, width]);
+
+    yScale = d3.scaleLinear()
+        .domain([0, d3.max(rawUs.map(a=>a[metric]))]) 
+        .range([height, 0]);
+
+    var svg = d3.select("#fig1").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .attr("id","svg1")
+    .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    let caption = "";
+    if(metric=='positive') {
+        caption="Number of Positive Cases"
+    } else if (metric=='death') {
+        caption="Number of Deaths"
+    } else if (metric=='total') {
+        caption="Number of Tests"
+    };
+
+    svg.append("text")
+        .attr("x", (width / 2))             
+        .attr("y", 0 - (margin.top / 2))
+        .attr("text-anchor", "middle")  
+        .style("font-size", "16px") 
+        .style("font-weight", "bold")  
+        .text(caption);
 
 
-function toJSON(csv){
+    svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(xScale).tickValues(xScale.domain().filter(function(d,i){ return !(i%4)})));
+    //
 
-    var lines=csv.split("\n");
-  
-    var result = [];
-  
-    var headers=lines[0].trim().split(",");
-    jhuHeaders = headers;
-    headers[0] = 'state';
-    headers[1] = 'country';
-   
-    for(var i=1;i<lines.length;i++){
-  
-        var obj = {};
-        var currentline=lines[i].trim().split(",");
-  
-        for(var j=0;j<headers.length;j++){
-            if(j < 2) {
-                obj[headers[j]] = currentline[j];
-            } else {
-                obj[headers[j]] = +currentline[j];
-            }
-        }
-  
-        result.push(obj);
-  
-    }
+    svg.append("g")
+        .attr("class", "y axis")
+        .call(d3.axisLeft(yScale));
 
-    return result; 
-  }
+
+    var line = d3.line(metric)
+        .x(d => xScale(formatDate(d.date)))
+        .y(d => yScale(d[metric])) 
+        ;
+
+    svg.append("path")
+        .datum(data) 
+        .attr("class", "line") 
+        .attr("d", line);
+
+
+    svg.selectAll(".dot")
+        .data(data)
+        .enter()
+        .append("circle") 
+        .attr("class", "dot")
+        .attr("cx", d => xScale(formatDate(d.date)))
+        .attr("cy", d => yScale(d[metric]))
+        .attr("r", 5)
+        .on("mouseover", d=>mouseover(d))
+        .on("mouseout", mouseout);
+};
