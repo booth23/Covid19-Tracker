@@ -65,13 +65,16 @@ function formatdata(data) {
     for(var i=0; i < data.length; i++) {
         var st = data[i]["state"];
         var dt = data[i]["date"];
-        var pos = data[i]["positive"] | 0;
-        var prev = 0;
+
         var ob = {
                 "positive": data[i]["positive"] | 0,
                 "negative": data[i]["negative"] | 0,
                 "death": data[i]["death"] | 0,
-                "total": data[i]["total"] | 0
+                "total": data[i]["total"] | 0,
+                "positiveIncrease": data[i]["positiveIncrease"] | 0,
+                "deathIncrease": data[i]["deathIncrease"] | 0,
+                "testIncrease": data[i]["testIncrease"] | 0,
+                "hospitalized": data[i]["hospitalized"] | 0
             }
         if(st in newobj){
             newobj[st][dt] = ob; 
@@ -100,31 +103,16 @@ function toggleSourceMenu() {
 
 
     function mouseover(d) {  // Add interactivity
-        var x = Math.min(xScale(formatDate(d.date))-50,850);
-        var y = Math.max(yScale(d[metric])-5, 30);
+        var x = Math.min(xScale(formatDate(d.date))-1,850);
+        var y = Math.max(yScale(d[metric])-1, 30);
 
         d3.select("#svg1")
-            .append('svg:text')
+            .append("text")
             .attr("id","tooltip")
-            .attr("class", "tooltip")
-            .attr("x", x)
-            .attr("y", y)
-            .append('svg:tspan')
-            .attr('x', x)
-            .attr('dy', 0)
-            .text("Date: " + formatDate(d.date))
-            .append('svg:tspan')
-            .attr('x', x)
-            .attr('dy', 14)
-            .text("Confirmed: " + formatNumber(d.positive))
-            .append('svg:tspan')
-            .attr('x', x)
-            .attr('dy', 15)
-            .text("Deaths: " + formatNumber(d.death))
-            .append('svg:tspan')
-            .attr('x', x)
-            .attr('dy', 15)
-            .text("Tested: " + formatNumber(d.posNeg));
+            .attr("x",x)
+            .attr("y",y)
+            .text(formatNumber(d[metric])+" " + metricLuShort[metric]);
+            
     };
 
     function mouseout() {
@@ -138,14 +126,6 @@ function toggleSourceMenu() {
 // change caption depending on what metric we are looking at
 function setMetric(val) {
     metric = val;
-    //var cap = document.getElementById("dataTable").createCaption();
-    //if(val=='positive') {
-    //    cap.innerHTML = '<b>Number of positive cases</b>'; 
-    //} else if(val=='death') {
-    //    cap.innerHTML = '<b>Number of deaths</b>'; 
-    //} else if(val=='total') {
-    //    cap.innerHTML = '<b>Number of tests reported (positive and negative)</b>'; 
-    //}
     
 };
 
@@ -205,6 +185,25 @@ function sortSub(data, col) {
      });
 };
 
+var metricLu = {
+    'positive': 'Number of Positive Cases',
+    'death': 'Total Number of Deaths',
+    'total': 'Total Number of Tests',
+    'positiveIncrease': 'Daily Positive Cases',
+    'testIncrease': 'Daily Tests Conducted',
+    'hospitalized': 'Hospitalizations'
+};
+
+var metricLuShort = {
+    'positive': 'Positive Cases',
+    'death': 'Deaths',
+    'total': 'Tests',
+    'positiveIncrease': 'New Cases',
+    'testIncrease': 'New Tests',
+    'hospitalized': 'Hospitalizations'
+}
+
+
 function plotUs(data) {
 
     d3.select("#fig1").selectAll("svg").remove();
@@ -224,15 +223,8 @@ function plotUs(data) {
     .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    let caption = "";
-    if(metric=='positive') {
-        caption="Number of Positive Cases"
-    } else if (metric=='death') {
-        caption="Number of Deaths"
-    } else if (metric=='total') {
-        caption="Number of Tests"
-    };
-
+    caption = metricLu[metric];
+    
     svg.append("text")
         .attr("x", (width / 2))             
         .attr("y", 0 - (margin.top / 2))
