@@ -206,10 +206,12 @@ var metricLuShort = {
 
 function plotUs(data) {
 
+    let dates = data.map(a=>a.date).sort();
+
     d3.select("#fig1").selectAll("svg").remove();
 
     xScale = d3.scaleBand()
-        .domain(data.map(a => formatDate(a.date)).sort())
+        .domain(dates.map(a => formatDate(a)))
         .range([0, width]);
 
     yScale = d3.scaleLinear()
