@@ -76,7 +76,7 @@
     var width = 1000; 
     var height = 300; 
         
-    var sortOrder = false;
+    var sortOrder = 1;
 
     
 
@@ -97,7 +97,9 @@
         .then(function (response) {
             return response.json();
         }).then(function(data) {
-            rawUs = data;
+            var st = data.map(e => e.date).indexOf(20200301);
+            rawUs = data.slice(0,st);
+            
         
 
         plotUs(rawUs);

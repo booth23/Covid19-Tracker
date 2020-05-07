@@ -10,7 +10,7 @@ function loadTable(caseData, metric="positive") {
 
     // build html string for header row with click event to sort data by that column.
     for(let c of cols) {
-        headHtml += `<th onclick="loadTable(sortSub(dataSet,${c}),metric)">${formatDate(c)}</th>`;
+        headHtml += `<th onclick="loadTable(sortSub(dataSet,${c}))">${formatDate(c)}</th>`;
     }
     // apply the string
     tableColumns.innerHTML = '<tr>' + headHtml + '</tr>';
@@ -33,7 +33,7 @@ function loadTable(caseData, metric="positive") {
                 val = 0;
             }
             
-            bodyHtml += `<td>${val}</td>`;
+            bodyHtml += `<td>${formatNumber(val)}</td>`;
         });
         
         bodyHtml += `</tr>`;
@@ -158,30 +158,44 @@ function sortState(data, col='state') {
 
 };
 
-// sort by dates. some values are undefined so we treat those as 0s;
-function sortSub(data, col) {
+function flipSort() {
+    if (sortOrder == 1) {
+        sortOrder = -1;
+    } else {
+        sortOrder = 1;
+    }
+};
 
-    sortOrder = !sortOrder;
+// sort by dates. some values are undefined so we treat those as 0s;
+function sortSub(data, col, m=metric) {
+
+    flipSort();
+    var x;
+    var y;
     return data.sort((a, b) => { 
         if(col in a) {
-            var x = a[col][metric];
+            x = a[col][m];
         } else {
             x = 0;
         }
 
         if(col in b) {
-            var y = b[col][metric];
+            y = b[col][m];
         } else {
             y = 0;
         }
+
+        var val;
                    
         if (x > y) {
-            return sortOrder;
+            val = sortOrder;
         } else if (x < y) {
-            return !sortOrder;
+            val = sortOrder * -1;
         } else {
-            return 0;
+            val = 0;
         }
+        
+        return val;
      });
 };
 
@@ -190,7 +204,7 @@ var metricLu = {
     'death': 'Total Number of Deaths',
     'total': 'Total Number of Tests',
     'positiveIncrease': 'Daily Positive Cases',
-    'testIncrease': 'Daily Tests Conducted',
+    'deathIncrease': 'Daily Deaths',
     'hospitalized': 'Hospitalizations'
 };
 
@@ -199,7 +213,7 @@ var metricLuShort = {
     'death': 'Deaths',
     'total': 'Tests',
     'positiveIncrease': 'New Cases',
-    'testIncrease': 'New Tests',
+    'deathIncrease': 'New Deaths',
     'hospitalized': 'Hospitalizations'
 }
 
