@@ -10,7 +10,7 @@ function loadTable(caseData, metric="positive") {
 
     // build html string for header row with click event to sort data by that column.
     for(let c of cols) {
-        headHtml += `<th onclick="loadTable(sortSub(dataSet,${c}))">${formatDate(c)}</th>`;
+        headHtml += `<th onclick="loadTable(sortSub(dataSet,${c}),metric)">${formatDate(c)}</th>`;
     }
     // apply the string
     tableColumns.innerHTML = '<tr>' + headHtml + '</tr>';
